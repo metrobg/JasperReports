@@ -2,13 +2,13 @@ import com.cete.dynamicpdf.*;
 import com.cete.dynamicpdf.pageelements.*;
 import oracle.jdbc.OracleTypes;
 import oracle.jdbc.driver.OracleCallableStatement;
-import sun.reflect.generics.tree.ReturnType;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -81,12 +81,15 @@ public class Invoice {
         private WebColor objTotalBGColor = new WebColor("#FFC0C0");
         private WebColor objBorderColor = new WebColor("#000000");
         private WebColor objThankYouText = new WebColor("#000080");
+
         private CeteDAO ceteDAO = null;
         private ProductDAO productDAO = null;
+        private ArrayList<Integer> popItems;
+
 
         public MyInvoice() {
-            LayoutGrid grid = new LayoutGrid(); //Default is decimal
-            //  template.getElements().add(grid);
+           // LayoutGrid grid = new LayoutGrid(); //Default is decimal
+           //   template.getElements().add(grid);
             // Top part of Invoice
 
             template.getElements().add(new Label("Heritage Manufacturing, Inc.", 0, 10, 540, 18, Font.getHelveticaBold(), 14, TextAlign.CENTER));
@@ -169,14 +172,14 @@ public class Invoice {
             objGroup.add(new Line(0, 288, 540, 288, 0.5f));
             objGroup.add(new Line(0, 630, 540, 630, 0.5f));
             objGroup.add(new Line(60, 270, 60, 630, 0.5f));
-            objGroup.add(new Line(360, 270, 360, 720, 0.5f));
+            objGroup.add(new Line(390, 270, 390, 720, 0.5f));
             objGroup.add(new Line(450, 270, 450, 720, 0.5f));
             objGroup.add(new Line(450, 702, 540, 702, 0.5f));
 
             objGroup.add(new Label("Quantity", 0, 272, 60, 12, Font.getHelveticaBold(), 12, TextAlign.CENTER));
             objGroup.add(new Label("Description", 60, 272, 300, 12, Font.getHelveticaBold(), 12, TextAlign.CENTER));
-            objGroup.add(new Label("Unit Price", 360, 272, 90, 12, Font.getHelveticaBold(), 12, TextAlign.CENTER));
-            objGroup.add(new Label("Price", 450, 272, 90, 12, Font.getHelveticaBold(), 12, TextAlign.CENTER));
+            objGroup.add(new Label("Price", 400, 272, 40, 12, Font.getHelveticaBold(), 12, TextAlign.CENTER));
+            objGroup.add(new Label("Extension", 450, 272, 90, 12, Font.getHelveticaBold(), 12, TextAlign.CENTER));
 
             objGroup.add(new Label("Sub Total", 364, 632, 82, 12, Font.getHelveticaBold(), 12, TextAlign.RIGHT));
             objGroup.add(new Label("Discount", 364, 650, 82, 12, Font.getHelveticaBold(), 12, TextAlign.RIGHT));
@@ -239,7 +242,7 @@ public class Invoice {
                 Page objLastPage = drawInvoiceData(document, orderid);
                 // Draws aditional pages if necessary
                 while (objLastPage == null) {
-                    objLastPage = drawInvoiceData(document,orderid);
+                    objLastPage = drawInvoiceData(document, orderid);
                 }
                 // Draws the totals to the bottom of the last page of the Invoice
                 drawTotals(ceteDAO, objLastPage);
@@ -247,13 +250,13 @@ public class Invoice {
 
         }
 
-        private Page drawInvoiceData(Document document,String orderid) throws SQLException {
+        private Page drawInvoiceData(Document document, String orderid) throws SQLException {
             // Tracks if the invoice is finished
             boolean invoiceFinished = true;
             // Tracks the y position on the page
-               yOffset = 288;
-            if(ceteDAO  == null) {
-               ceteDAO = (CeteDAO) e1.nextElement();
+            yOffset = 288;
+            if (ceteDAO == null) {
+                ceteDAO = (CeteDAO) e1.nextElement();
             }
 
             // Create a page for the Invoice
@@ -265,7 +268,7 @@ public class Invoice {
             // Add ship to address
             drawShipTo(ceteDAO, objPage);
             drawComments(ceteDAO, objPage);
-
+            getPOPItems(connection);
             while (e2.hasMoreElements()) {
                 // Break if at the bottom of the page
 
@@ -341,8 +344,8 @@ public class Invoice {
             if (ceteDAO.getShipToAddress2() != null) {
                 shipToAddress += ceteDAO.getShipToAddress2() + "\n";
                 shipToAddress += ceteDAO.getShipToCSZ() + "\n";
-            }       else {
-               shipToAddress += ceteDAO.getShipToCSZ() + "\n\n";
+            } else {
+                shipToAddress += ceteDAO.getShipToCSZ() + "\n\n";
             }
 
             shipToAddress += ceteDAO.getPhone();
@@ -362,7 +365,20 @@ public class Invoice {
 
         }
 
-        private void drawLineItem(ProductDAO productDAO, Page page,String orderid) throws SQLException {
+        private boolean hasLongDescription(int item) {
+
+            for (int i = 0; i < popItems.size(); i++) {
+                if (popItems.get(i).equals(item)) {
+                    return true;
+
+                }
+            }
+
+            return false;
+        }
+
+
+        private void drawLineItem(ProductDAO productDAO, Page page, String orderid) throws SQLException {
 
             BigDecimal quantity;
             BigDecimal unitPrice;
@@ -373,19 +389,23 @@ public class Invoice {
             BigDecimal lineTotal = unitPrice.multiply(quantity);
             subTotal = lineTotal.add(subTotal);
 
-           // System.out.println("drawLineItem yOffset is: " + yOffset);
+            TextArea ta = null;
+
+            // System.out.println("drawLineItem yOffset is: " + yOffset);
 
             page.getElements().add(new Label(quantity.toString(), 4,
                     3 + yOffset, 52, 12, Font.getHelvetica(), 12,
                     TextAlign.RIGHT));
 
+
             if (productDAO.get_page_name() == null) {
                 page.getElements().add(new Label(productDAO.get_product_description(),
-                        64, 3 + yOffset, 292, 12, Font.getHelveticaBold(), 12));
+                        64, 3 + yOffset, 326, 12, Font.getHelveticaBold(), 12));
             } else {
                 page.getElements().add(new Label(productDAO.get_product_description() + " - " + productDAO.get_page_name(),
-                        64, 3 + yOffset, 292, 12, Font.getHelveticaBold(), 12));
+                        64, 3 + yOffset, 326, 12, Font.getHelveticaBold(), 12));
             }
+
             unitPrice = unitPrice.setScale(2, BigDecimal.ROUND_HALF_EVEN);
             lineTotal = lineTotal.setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
@@ -396,29 +416,45 @@ public class Invoice {
                     Font.getHelvetica(), 12, TextAlign.RIGHT));
 
             yOffset += 18;
-            ResultSet rs  = getItemOptions(connection, orderid,productDAO.get_product_id(),productDAO.get_product_order_item());
-            drawLineItem(rs,page,productDAO.get_product_quantity());
+            ResultSet rs = getItemOptions(connection, orderid, productDAO.get_product_id(), productDAO.get_product_order_item());
+            drawLineItem(rs, page, productDAO.get_product_quantity());
+
+            if (hasLongDescription(productDAO.get_product_id())) {
+                ta = new TextArea(productDAO.get_short_description(), 64, 3 + yOffset, 326, 12, Font.getHelvetica(), 12);
+                page.getElements().add(ta);
+            }
+            yOffset += 18;
+            // keep printing description for this item until all done
+            while (((ta = ta.getOverflowTextArea(64, 3 + yOffset, 326, 12)) != null) && (yOffset <= 594)) {
+                page.getElements().add(ta);
+                yOffset += 18;
+            }
+
+            // if (ta != null) {
+            //   overFlowText = ta.getText();
+            //   overflow = true;
+            yOffset -= 18;
+
+            //}
         }
 
-        private void drawLineItem(ResultSet rs, Page page,int qty) throws SQLException {
-
-            //System.out.println("Drawing Line item " + productDAO.get_product_description());
+        private void drawLineItem(ResultSet rs, Page page, int qty) throws SQLException {
             // Adds a line item to the invoice
             while (rs.next()) {
                 BigDecimal unitPrice;
                 unitPrice = new BigDecimal(0.0);
 
-                 BigDecimal quantity;
-                 quantity = new BigDecimal(qty);
+                BigDecimal quantity;
+                quantity = new BigDecimal(qty);
 
                 unitPrice = rs.getBigDecimal("PRICE");
-                  System.out.println("QUANTITY IS " + qty);
+                System.out.println("QUANTITY IS " + qty);
                 BigDecimal lineTotal = unitPrice.multiply(quantity);
                 subTotal = lineTotal.add(subTotal);
 
                 page.getElements().add(new Label("", 4, 3 + yOffset, 52, 12, Font.getHelvetica(), 12, TextAlign.RIGHT));
-                page.getElements().add(new Label("    " +rs.getString("NAME") + ": " + rs.getString("ITEM"),
-                        64, 3 + yOffset, 292, 12, Font.getHelvetica(), 12));
+                page.getElements().add(new Label("    " + rs.getString("NAME") + ": " + rs.getString("ITEM"),
+                        64, 3 + yOffset, 326, 12, Font.getHelvetica(), 12));
 
                 unitPrice = unitPrice.setScale(2, BigDecimal.ROUND_HALF_EVEN);
 
@@ -430,11 +466,12 @@ public class Invoice {
                             Font.getHelvetica(), 12, TextAlign.RIGHT));
                     page.getElements().add(new Label(df.format(lineTotal.doubleValue()), 454, 3 + yOffset, 82, 12,
                             Font.getHelvetica(), 12, TextAlign.RIGHT));
-                     }
-                    yOffset += 18;
+                }
+                yOffset += 18;
 
             }
         }
+
         private void drawTotals(CeteDAO ceteDAO, Page page) {
             // Add totals to the bottom of the Invoice
 
@@ -527,13 +564,13 @@ public class Invoice {
             return v1;
         }
 
-        private ResultSet getItemOptions(Connection connection, String orderid, int item,int orderitem) {
+        private ResultSet getItemOptions(Connection connection, String orderid, int item, int orderitem) {
             ResultSet rs = null;
             try {
                 CallableStatement stmt = connection.prepareCall("BEGIN GET_ITEM_OPTIONS(?, ?, ?, ?); END;");
                 stmt.setString(1, orderid);    // order number
-                stmt.setInt(2,item);           // item number
-                stmt.setInt(3,orderitem);           // order item number
+                stmt.setInt(2, item);           // item number
+                stmt.setInt(3, orderitem);           // order item number
                 stmt.registerOutParameter(4, OracleTypes.CURSOR); //REF CURSOR
                 stmt.execute();
                 rs = ((OracleCallableStatement) stmt).getCursor(4);
@@ -545,13 +582,32 @@ public class Invoice {
             return rs;
         }
 
+        private ResultSet getPOPItems(Connection connection) {
+            ResultSet rs = null;
+            try {
+                CallableStatement stmt = connection.prepareCall("BEGIN GET_POP_ITEMS(?); END;");
+                stmt.registerOutParameter(1, OracleTypes.CURSOR); //REF CURSOR
+                stmt.execute();
+                rs = ((OracleCallableStatement) stmt).getCursor(1);
+                popItems = new ArrayList(10);
+                while (rs.next()) {
+                    popItems.add(rs.getInt(1));
+                }
+
+
+            } catch (SQLException ex1) {
+                ex1.printStackTrace(System.err);
+            }
+            return rs;
+        }
 
         private Vector getLineItems(Connection connection, String orderid) {
             Vector v1 = null;
             try {
 
                 PreparedStatement ps = connection.prepareStatement(
-                        "SELECT op.id, op.productid, op.qty, p.title, op.price,pagename " +
+                        "SELECT op.id, op.productid, op.qty, p.title, op.price,pagename," +
+                                "REGEXP_REPLACE(SHORT_DESCRIPTION,'<p>','\n') SHORT_DESCRIPTION " +
                                 "FROM HT_ORDER_PRODUCTS op, HT_PRODUCTS p " +
                                 "WHERE op.productid = p.id " +
                                 "AND op.orderid = ?");
@@ -563,7 +619,7 @@ public class Invoice {
                 while (rs.next()) {
                     ProductDAO productDAO = new ProductDAO(rs.getInt(1), rs.getInt(2),
                             rs.getShort(3), rs.getString(4),
-                            rs.getBigDecimal(5), rs.getString(6));
+                            rs.getBigDecimal(5), rs.getString(6), rs.getString(7));
                     v1.add(productDAO);
 
                 }
@@ -582,12 +638,13 @@ public class Invoice {
         private String _product_description;
         private BigDecimal _product_price;
         private String _page_name;
+        private String _short_description;
 
         public ProductDAO(int product_order_item,
                           int product_id,
                           short product_quantity,
                           String product_description,
-                          BigDecimal product_price, String page_name) {
+                          BigDecimal product_price, String page_name, String short_description) {
 
             this._product_order_item = product_order_item;
             this._product_id = product_id;
@@ -595,6 +652,7 @@ public class Invoice {
             this._product_description = product_description;
             this._product_price = product_price;
             this._page_name = page_name;
+            this._short_description = short_description;
 
 
         }
@@ -621,6 +679,10 @@ public class Invoice {
 
         public String get_page_name() {
             return _page_name;
+        }
+
+        public String get_short_description() {
+            return _short_description;
         }
     }
 
