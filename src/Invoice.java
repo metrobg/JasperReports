@@ -88,8 +88,8 @@ public class Invoice {
 
 
         public MyInvoice() {
-           // LayoutGrid grid = new LayoutGrid(); //Default is decimal
-           //   template.getElements().add(grid);
+            // LayoutGrid grid = new LayoutGrid(); //Default is decimal
+            //   template.getElements().add(grid);
             // Top part of Invoice
 
             template.getElements().add(new Label("Heritage Manufacturing, Inc.", 0, 10, 540, 18, Font.getHelveticaBold(), 14, TextAlign.CENTER));
@@ -425,17 +425,18 @@ public class Invoice {
             }
             yOffset += 18;
             // keep printing description for this item until all done
-            while (((ta = ta.getOverflowTextArea(64, 3 + yOffset, 326, 12)) != null) && (yOffset <= 594)) {
-                page.getElements().add(ta);
-                yOffset += 18;
+            try {
+                while (((ta = ta.getOverflowTextArea(64, 3 + yOffset, 326, 12)) != null) && (yOffset <= 594)) {
+                    page.getElements().add(ta);
+                    yOffset += 18;
+                }
+            } catch (Exception e) {
+                // ignore exception
             }
 
-            // if (ta != null) {
-            //   overFlowText = ta.getText();
-            //   overflow = true;
             yOffset -= 18;
 
-            //}
+
         }
 
         private void drawLineItem(ResultSet rs, Page page, int qty) throws SQLException {
@@ -448,7 +449,7 @@ public class Invoice {
                 quantity = new BigDecimal(qty);
 
                 unitPrice = rs.getBigDecimal("PRICE");
-                System.out.println("QUANTITY IS " + qty);
+                //System.out.println("QUANTITY IS " + qty);
                 BigDecimal lineTotal = unitPrice.multiply(quantity);
                 subTotal = lineTotal.add(subTotal);
 
