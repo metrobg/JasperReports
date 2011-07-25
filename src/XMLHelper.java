@@ -15,7 +15,8 @@ public class XMLHelper {
     // Construct a new DOM Parser
     DOMParser xp = new DOMParser();
     // Parse in Non-Validating Mode
-    xp.setValidationMode(false);
+   // xp.setValidationMode(false);
+      xp.setValidationMode(0);
     // Preserve Whitespace
     xp.setPreserveWhitespace(true);
     // Attempt to parse XML coming in from the Reader

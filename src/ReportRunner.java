@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.HashMap;
 
@@ -59,15 +61,6 @@ public class ReportRunner extends HttpServlet {
             JRHtmlExporter exporter = new JRHtmlExporter();
 
 
-            if (req.getParameter("output").equalsIgnoreCase("HTML")) {
-                PrintWriter out;
-                out = res.getWriter();
-                exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
-                exporter.setParameter(JRExporterParameter.OUTPUT_WRITER, out);
-                exporter.exportReport();
-                out.close();
-            }
-
             if (req.getParameter("output").equalsIgnoreCase("PDF")) {
                 OutputStream os;
                 os = res.getOutputStream();
@@ -78,14 +71,9 @@ public class ReportRunner extends HttpServlet {
                 os.flush();
                 os.close();
             }
-            if (req.getParameter("output").equalsIgnoreCase("HTML")) {
-                OutputStream os;
-                os = res.getOutputStream();
-                JasperExportManager.exportReportToPdfStream(jasperPrint, os);
-                os.flush();
-                os.close();
-            }
+
             if (req.getParameter("output").equalsIgnoreCase("XL") ||
+                    req.getParameter("output").equalsIgnoreCase("HTML")  ||
                     req.getParameter("output").equalsIgnoreCase("XLS")) {
                 OutputStream os;
                 os = res.getOutputStream();
@@ -107,6 +95,22 @@ public class ReportRunner extends HttpServlet {
                 os.close();
             }
 
+            if (req.getParameter("output").equalsIgnoreCase("HTML")) {
+                PrintWriter out;
+                out = res.getWriter();
+                exporter.setParameter(JRExporterParameter.JASPER_PRINT, jasperPrint);
+                exporter.setParameter(JRExporterParameter.OUTPUT_WRITER, out);
+                exporter.exportReport();
+                out.close();
+            }
+            if (req.getParameter("output").equalsIgnoreCase("HTML")) {
+                OutputStream os;
+                os = res.getOutputStream();
+                JasperExportManager.exportReportToPdfStream(jasperPrint, os);
+                os.flush();
+                os.close();
+            }
+
         } catch (Exception e) {
             System.out.println("Error " + e.getMessage());
         }
@@ -116,7 +120,7 @@ public class ReportRunner extends HttpServlet {
     public JasperPrint returnReportPrint(HttpServletRequest req) {
         JasperPrint jasperPrint = null;
         HashMap<String, String> map = new HashMap<String, String>();
-        Connection connection;
+        Connection connection = null;
         String key;
         String value;
 
@@ -126,17 +130,16 @@ public class ReportRunner extends HttpServlet {
             value = req.getParameter(key);
             map.put(key, value);
 
-
         }
 
         String Template = TemplateFolder + req.getParameter("template");
         String dbKey = req.getParameter("template").substring(0, 3);
 
         try {
-
             JasperReport jasperReport = JasperCompileManager.compileReport(Template + ".jrxml");
 
             connection = DbConn(dbKey);
+
             jasperPrint = JasperFillManager.fillReport(jasperReport, map, connection);
             connection.close();
         } catch (Exception ex) {
@@ -149,6 +152,5 @@ public class ReportRunner extends HttpServlet {
     public Connection DbConn(String key) throws Exception {
         return ConnectionFactory.getConnection(key);
     }
-
 
 }

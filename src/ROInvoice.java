@@ -84,13 +84,13 @@ public class ROInvoice {
 
         public MyInvoice() {
             LayoutGrid grid = new LayoutGrid(); //Default is decimal
-               template.getElements().add(grid);
+             //  template.getElements().add(grid);
             // Top part of Invoice
 
             template.getElements().add(new Label("Heritage Manufacturing, Inc.", 0, 20, 540, 18, Font.getHelveticaBold(), 14, TextAlign.CENTER));
             template.getElements().add(new Label("4600 NW 135th Street",         0, 36, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
             template.getElements().add(new Label("Opa Locka, FL  33054",         0, 50, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
-            template.getElements().add(new Label("Tel: 305.685.5988",            0, 64, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
+            template.getElements().add(new Label("Tel: 305.685.5966",            0, 64, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
             template.getElements().add(new Label("Fax: 305.687.6721",            0, 78, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
 
             template.getElements().add(new Label(" ", 0, 0, 540, 18, Font.getHelveticaBold(), 18, TextAlign.RIGHT));
@@ -189,8 +189,8 @@ public class ROInvoice {
             if (!pageTemplateImagesSet) {
                 try {
                     // template.getElements().add(new Image(getServletContext().getRealPath("images/logo_mg.gif"), 0, 0, 0.85f));
-                    // template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
-                    template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
+                     template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
+                    //template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace(System.err);
                 }
