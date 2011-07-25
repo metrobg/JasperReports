@@ -88,14 +88,14 @@ public class Invoice {
 
 
         public MyInvoice() {
-            // LayoutGrid grid = new LayoutGrid(); //Default is decimal
-            //   template.getElements().add(grid);
+           // LayoutGrid grid = new LayoutGrid(); //Default is decimal
+           //   template.getElements().add(grid);
             // Top part of Invoice
 
             template.getElements().add(new Label("Heritage Manufacturing, Inc.", 0, 10, 540, 18, Font.getHelveticaBold(), 14, TextAlign.CENTER));
             template.getElements().add(new Label("4600 NW 135th Street", 0, 26, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
             template.getElements().add(new Label("Opa Locka, FL  33054", 0, 40, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
-            template.getElements().add(new Label("Tel: 305.685.5988", 0, 54, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
+            template.getElements().add(new Label("Tel: 305.685.5966", 0, 54, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
             template.getElements().add(new Label("Fax: 305.687.6721", 0, 68, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
 
             template.getElements().add(new Label("Invoice", 400, 0, 140, 24, Font.getHelveticaBold(), 24, TextAlign.LEFT));
@@ -216,8 +216,8 @@ public class Invoice {
             if (!pageTemplateImagesSet) {
                 try {
                     // template.getElements().add(new Image(getServletContext().getRealPath("images/logo_mg.gif"), 0, 0, 0.85f));
-                    // template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
-                    template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
+                     template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
+                    //template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace(System.err);
                 }
@@ -425,18 +425,15 @@ public class Invoice {
             }
             yOffset += 18;
             // keep printing description for this item until all done
-            try {
+try {
                 while (((ta = ta.getOverflowTextArea(64, 3 + yOffset, 326, 12)) != null) && (yOffset <= 594)) {
                     page.getElements().add(ta);
                     yOffset += 18;
                 }
             } catch (Exception e) {
-                // ignore exception
+               // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-
-            yOffset -= 18;
-
-
+               yOffset -= 18;
         }
 
         private void drawLineItem(ResultSet rs, Page page, int qty) throws SQLException {
@@ -449,7 +446,7 @@ public class Invoice {
                 quantity = new BigDecimal(qty);
 
                 unitPrice = rs.getBigDecimal("PRICE");
-                //System.out.println("QUANTITY IS " + qty);
+                System.out.println("QUANTITY IS " + qty);
                 BigDecimal lineTotal = unitPrice.multiply(quantity);
                 subTotal = lineTotal.add(subTotal);
 
