@@ -33,10 +33,10 @@ public class MailingLabels extends HttpServlet {
     Document document;
     Page page;
     float currentColumn, currentRow, labelWidth, labelHeight;
-    String companyName;
-    String contactName;
-    String phone;
-    String fax;
+    String Name;
+    String Address1;
+    String Address2;
+    String CSZ;
     ServletOutputStream sOut;
     Connection connection;
 
@@ -56,11 +56,11 @@ public class MailingLabels extends HttpServlet {
 
     public void doGet(HttpServletRequest req, HttpServletResponse res)
             throws IOException, ServletException {
-        Connection ceTe = null;
+
         try {
-            connection = DbConn("HMI");
+            connection = DbConn("HMI1");
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            System.out.print("error " + e.toString());
         }
         sOut = res.getOutputStream();
 
@@ -79,11 +79,10 @@ public class MailingLabels extends HttpServlet {
         // Creates a ResultSet for the report
         try {
             String query = "select alt_name,alt_address1,alt_address2,alt_city||','||alt_state||' '||alt_zip CSZ " +
-                    "from ht_orders where invoice in (?)";
-            // PreparedStatement ps = connection.prepareStatement("Select CompanyName," +
-            //       "ContactName, Phone, Fax FROM Customers");
+                    "from ht_orders where invoice > (select  max(invoice) - 8 from ht_orders)";
+
             PreparedStatement ps = connection.prepareStatement(query);
-            ps.setInt(1, Integer.parseInt(req.getParameter("invoice")));
+            //ps.setInt(1, Integer.parseInt(req.getParameter("invoice")));
             data = ps.executeQuery();
         } catch (SQLException ex1) {
             ex1.printStackTrace(System.err);
@@ -91,11 +90,12 @@ public class MailingLabels extends HttpServlet {
 
         // Loop over the ResultSet and add each label
         try {
+            assert data != null;
             while (data.next()) {
-                companyName = safeDBNull(data.getString("CompanyName"), data);
-                contactName = safeDBNull(data.getString("ContactName"), data);
-                phone = safeDBNull(data.getString("Phone"), data);
-                fax = safeDBNull(data.getString("Fax"), data);
+                Name = safeDBNull(data.getString("alt_name"), data);
+                Address1 = safeDBNull(data.getString("alt_address1"), data);
+                Address2 = safeDBNull(data.getString("alt_address2"), data);
+                CSZ = safeDBNull(data.getString("CSZ"), data);
                 addLabel();
             }
         } catch (SQLException ex2) {
@@ -108,9 +108,11 @@ public class MailingLabels extends HttpServlet {
         // Outputs the MailingLabels to the current web page
         document.drawToWeb(req, res, sOut, "MailingLabels.pdf");
         try {
-            ceTe.close();
+            data.close();
+            connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            System.out.print("error " + e.getSQLState());
+            //e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         sOut.close();
     }
@@ -201,23 +203,37 @@ public class MailingLabels extends HttpServlet {
 
     // This is where you format the look of each label
     private void addLabelInfo(float x, float y) {
-        TextArea txt1 = new TextArea(companyName, x + labelLeftRightMargin,
+        TextArea txt3;
+        TextArea txt4;
+        TextArea txt1 = new TextArea(Name, x + labelLeftRightMargin,
                 y + labelTopBottomMargin, labelWidth
                 - (labelLeftRightMargin * 2), 11,
                 Font.getTimesRoman(), 11);
-        TextArea txt2 = new TextArea(contactName, x + labelLeftRightMargin,
+        TextArea txt2 = new TextArea(Address1, x + labelLeftRightMargin,
                 y + labelTopBottomMargin + 12, labelWidth
                 - (labelLeftRightMargin * 2), 11,
                 Font.getTimesRoman(), 11);
-        TextArea txt3 = new TextArea(phone, x + labelLeftRightMargin,
-                y + labelTopBottomMargin + 24, labelWidth
-                - (labelLeftRightMargin * 2), 11,
-                Font.getTimesRoman(), 11);
-        TextArea txt4 = new TextArea(fax, x + labelLeftRightMargin,
-                y + labelTopBottomMargin + 36, labelWidth
-                - (labelLeftRightMargin * 2), 11,
-                Font.getTimesRoman(), 11);
+        if (Address2.length() > 0) {
+            txt3 = new TextArea(Address2, x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 24, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
 
+            txt4 = new TextArea(CSZ, x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 36, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+        } else {
+            txt3 = new TextArea(CSZ, x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 24, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+
+            txt4 = new TextArea("", x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 36, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+        }
         page.getElements().add(txt1);
         page.getElements().add(txt2);
         page.getElements().add(txt3);
