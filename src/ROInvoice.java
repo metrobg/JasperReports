@@ -39,10 +39,13 @@ public class ROInvoice {
         try {
             invoice = new ROInvoice();
         } catch (Exception e) {
+            System.out.println("error: " + e.toString());
             e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
         // Add Invoices to the document
-        invoice.drawInvoice(objDocument, orderid);
+        if (invoice != null) {
+            invoice.drawInvoice(objDocument, orderid);
+        }
 
         // Outputs the Invoices to the file.
         objDocument.draw("ROInvoice.pdf");
@@ -50,7 +53,8 @@ public class ROInvoice {
             if (!invoice.connection.isClosed())
                 invoice.connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            System.out.print("Error: " + e.toString());
+
         }
     }
 
@@ -80,18 +84,19 @@ public class ROInvoice {
         private WebColor objBorderColor = new WebColor("#000000");
         private WebColor objThankYouText = new WebColor("#000080");
         private CeteDAO ceteDAO = null;
-        private ProductDAO productDAO = null;
+        //private ProductDAO productDAO = null;
 
         public MyInvoice() {
-            LayoutGrid grid = new LayoutGrid(); //Default is decimal
-             //  template.getElements().add(grid);
+            //LayoutGrid grid; //Default is decimal
+            //grid = new LayoutGrid();
+            //  template.getElements().add(grid);
             // Top part of Invoice
 
             template.getElements().add(new Label("Heritage Manufacturing, Inc.", 0, 20, 540, 18, Font.getHelveticaBold(), 14, TextAlign.CENTER));
-            template.getElements().add(new Label("4600 NW 135th Street",         0, 36, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
-            template.getElements().add(new Label("Opa Locka, FL  33054",         0, 50, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
-            template.getElements().add(new Label("Tel: 305.685.5966",            0, 64, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
-            template.getElements().add(new Label("Fax: 305.687.6721",            0, 78, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
+            template.getElements().add(new Label("4600 NW 135th Street", 0, 36, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
+            template.getElements().add(new Label("Opa Locka, FL  33054", 0, 50, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
+            template.getElements().add(new Label("Tel: 305.685.5966", 0, 64, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
+            template.getElements().add(new Label("Fax: 305.687.6721", 0, 78, 540, 18, Font.getHelvetica(), 12, TextAlign.CENTER));
 
             template.getElements().add(new Label(" ", 0, 0, 540, 18, Font.getHelveticaBold(), 18, TextAlign.RIGHT));
 
@@ -189,7 +194,7 @@ public class ROInvoice {
             if (!pageTemplateImagesSet) {
                 try {
                     // template.getElements().add(new Image(getServletContext().getRealPath("images/logo_mg.gif"), 0, 0, 0.85f));
-                     template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
+                    template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
                     //template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace(System.err);
@@ -326,16 +331,17 @@ public class ROInvoice {
             page.getElements().add(new TextArea(comments, 10, 220, 300, 49, Font.getHelvetica(), 10));
 
             page.getElements().add(new TextArea(ceteDAO.getNotes(), 4, 632, 350, 90, Font.getHelveticaBold(), 10, objThankYouText));
-            if (ceteDAO.getDoctype() == "Order") {
+            if (ceteDAO.getDoctype().equals("Order")) {
                 page.getElements().add(new Label("Invoice", 400, 0, 140, 24, Font.getHelveticaBold(), 24, TextAlign.LEFT));
             } else {
-                page.getElements().add(new Label("Estimate",400, 0, 140, 24, Font.getHelveticaBold(), 24, TextAlign.LEFT));
+                page.getElements().add(new Label("Estimate", 400, 0, 140, 24, Font.getHelveticaBold(), 24, TextAlign.LEFT));
             }
         }
 
         private void drawLineItem(ProductDAO productDAO, Page page, String orderid) throws SQLException {
 
-            BigDecimal unitPrice = new BigDecimal(0);
+            BigDecimal unitPrice;
+            unitPrice = new BigDecimal(0);
             unitPrice = productDAO.get_product_price();
 
             TextArea ta = new TextArea(productDAO.get_product_description(), 14, 3 + yOffset, 436, 12, Font.getHelvetica(), 12);
