@@ -195,7 +195,7 @@ public class ROInvoice {
                 try {
                     // template.getElements().add(new Image(getServletContext().getRealPath("images/logo_mg.gif"), 0, 0, 0.85f));
                     template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
-                    //template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
+                    //  template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace(System.err);
                 }
@@ -409,7 +409,7 @@ public class ROInvoice {
                                 "alt_address1," +
                                 "alt_address2," +
                                 "alt_city||','||alt_state||' '||alt_zip CSZ," +
-                                "alt_phone ,SYSDATE,subtotal,doctype " +
+                                "NVL(alt_phone,'0000000000') alt_phone ,SYSDATE,subtotal,doctype " +
                                 "from rlorders o, rlcustomers c " +
                                 "WHERE orderid = ? " +
                                 "AND o.customerid = c.id");
