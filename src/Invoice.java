@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
-//import com.cete.dynamicpdf.pageelements.barcoding.Interleaved25;
 
 public class Invoice {
 
@@ -667,7 +666,8 @@ public class Invoice {
         }
 
         public String get_product_description() {
-            return _product_description;
+            return _product_description.replace("<br>", " ");
+
         }
 
         public BigDecimal get_product_price() {
