@@ -12,7 +12,12 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
+/*
+    96B458F0-F835-15C5-821B54169493EC5E       POP order
+    0E79447A-BDC7-27D7-2BB45180104B9E73  order  with options
+    0CEF8F80-C978-3504-4067C5581CE60A27  order with multiple items not options
 
+*/
 public class Invoice {
 
 
@@ -43,10 +48,12 @@ public class Invoice {
         try {
             invoice = new Invoice();
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            System.out.println(e.toString());  //To change body of catch statement use File | Settings | File Templates.
         }
         // Add Invoices to the document
-        invoice.drawInvoice(objDocument, orderid);
+        if (invoice != null) {
+            invoice.drawInvoice(objDocument, orderid);
+        }
 
         // Outputs the Invoices to the file.
         objDocument.draw("Invoice.pdf");
@@ -54,7 +61,7 @@ public class Invoice {
             if (!invoice.connection.isClosed())
                 invoice.connection.close();
         } catch (SQLException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            System.out.println(e.toString());  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -214,11 +221,16 @@ public class Invoice {
             // Adds the image to page template if it is not already added
             if (!pageTemplateImagesSet) {
                 try {
-                    // template.getElements().add(new Image(getServletContext().getRealPath("images/logo_mg.gif"), 0, 0, 0.85f));
+
                     template.getElements().add(new Image("/usr/local/apache-tomcat/webapps/HMI/WEB-INF/images/logo_mg.gif", 0, 0, 0.85f));
-                    //template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
+
                 } catch (FileNotFoundException ex) {
-                    ex.printStackTrace(System.err);
+                    try {
+                        template.getElements().add(new Image("images/logo_mg.gif", 0, 0, 0.85f));
+                        // ex.printStackTrace(System.err);
+                    } catch (FileNotFoundException ex2) {
+
+                    }
                 }
                 pageTemplateImagesSet = true;
             }
@@ -389,6 +401,7 @@ public class Invoice {
             subTotal = lineTotal.add(subTotal);
 
             TextArea ta = null;
+            boolean hasLongDescription = false;
 
             // System.out.println("drawLineItem yOffset is: " + yOffset);
 
@@ -421,6 +434,7 @@ public class Invoice {
             if (hasLongDescription(productDAO.get_product_id())) {
                 ta = new TextArea(productDAO.get_short_description(), 64, 3 + yOffset, 326, 12, Font.getHelvetica(), 12);
                 page.getElements().add(ta);
+                hasLongDescription = true;
             }
             yOffset += 18;
             // keep printing description for this item until all done
@@ -432,7 +446,8 @@ public class Invoice {
             } catch (Exception e) {
                 // e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            yOffset -= 18;
+            if (!hasLongDescription)           // if we did not have a long desc backoff line counter
+                yOffset -= 18;
         }
 
         private void drawLineItem(ResultSet rs, Page page, int qty) throws SQLException {
@@ -585,7 +600,7 @@ public class Invoice {
                 stmt.registerOutParameter(1, OracleTypes.CURSOR); //REF CURSOR
                 stmt.execute();
                 rs = ((OracleCallableStatement) stmt).getCursor(1);
-                popItems = new ArrayList(10);
+                popItems = new ArrayList<Integer>(10);
                 while (rs.next()) {
                     popItems.add(rs.getInt(1));
                 }
@@ -611,7 +626,7 @@ public class Invoice {
                 ps.setString(1, orderid);
 
                 ResultSet rs = ps.executeQuery();
-                v1 = new Vector(1, 1);
+                v1 = new Vector<ProductDAO>(1, 1);
                 while (rs.next()) {
                     ProductDAO productDAO = new ProductDAO(rs.getInt(1), rs.getInt(2),
                             rs.getShort(3), rs.getString(4),
@@ -679,7 +694,7 @@ public class Invoice {
         }
 
         public String get_short_description() {
-            return _short_description;
+            return _short_description.replace("<br>", " ");
         }
     }
 
