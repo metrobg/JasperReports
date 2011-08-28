@@ -78,8 +78,8 @@ public class MailingLabels extends HttpServlet {
         ResultSet data = null;
         // Creates a ResultSet for the report
         try {
-            String query = "select alt_name,alt_address1,alt_address2,alt_city||','||alt_state||' '||alt_zip CSZ " +
-                    "from ht_orders where invoice > (select  max(invoice) - 8 from ht_orders)";
+            String query = "select ALT_NAME,ALT_ADDRESS1,ALT_ADDRESS2,ALT_CITY||','||ALT_STATE||' '||ALT_ZIP CSZ " +
+                    "from HT_ORDERS where PRINT_LABEL = 1";
 
             PreparedStatement ps = connection.prepareStatement(query);
             //ps.setInt(1, Integer.parseInt(req.getParameter("invoice")));
