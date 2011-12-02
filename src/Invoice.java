@@ -630,11 +630,11 @@ public class Invoice {
                 String s = " Belt & Holster, Cyl Pouch & Ammo Pouch";
 
                 while (rs.next()) {
-                    if(rs.getInt(2) == 58713) {
-                         s = "Embossed" + s;
+                    if (rs.getInt(2) == 58713) {
+                        s = "Embossed" + s;
                     } else if (rs.getInt(2) == 59308) {
-                                s = "Mexican DL" + s;
-                    }  else {
+                        s = "Mexican DL" + s;
+                    } else {
                         s = rs.getString(4);
                     }
                     ProductDAO productDAO = new ProductDAO(rs.getInt(1), rs.getInt(2),
