@@ -627,9 +627,18 @@ public class Invoice {
 
                 ResultSet rs = ps.executeQuery();
                 v1 = new Vector<ProductDAO>(1, 1);
+                String s = " Belt & Holster, Cyl Pouch & Ammo Pouch";
+
                 while (rs.next()) {
+                    if(rs.getInt(2) == 58713) {
+                         s = "Embossed" + s;
+                    } else if (rs.getInt(2) == 59308) {
+                                s = "Mexican DL" + s;
+                    }  else {
+                        s = rs.getString(4);
+                    }
                     ProductDAO productDAO = new ProductDAO(rs.getInt(1), rs.getInt(2),
-                            rs.getShort(3), rs.getString(4),
+                            rs.getShort(3), s,
                             rs.getBigDecimal(5), rs.getString(6), rs.getString(7));
                     v1.add(productDAO);
 
