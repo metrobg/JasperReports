@@ -1,4 +1,6 @@
 import com.cete.dynamicpdf.*;
+import com.cete.dynamicpdf.pageelements.GridType;
+import com.cete.dynamicpdf.pageelements.LayoutGrid;
 import com.cete.dynamicpdf.pageelements.TextArea;
 
 import javax.servlet.ServletConfig;
@@ -29,9 +31,11 @@ public class MailingLabels extends HttpServlet {
     // These margins are on the labels themsleves
     int labelTopBottomMargin;
     int labelLeftRightMargin;
+    LayoutGrid grid = new LayoutGrid(GridType.PRINT);
 
     Document document;
     Page page;
+
     float currentColumn, currentRow, labelWidth, labelHeight;
     String Name;
     String Address1;
@@ -58,7 +62,7 @@ public class MailingLabels extends HttpServlet {
             throws IOException, ServletException {
 
         try {
-            connection = DbConn("HMI1");
+            connection = DbConn("HMI");
         } catch (Exception e) {
             System.out.print("error " + e.toString());
         }
@@ -66,6 +70,11 @@ public class MailingLabels extends HttpServlet {
 
         // Create a document and set it's properties
         document = new Document();
+
+
+            //   template.getElements().add(grid);
+
+            // Top part of Invoice
         page = new Page(PageSize.LETTER, PageOrientation.PORTRAIT);
         document.setCreator("MailingLabels.java");
         document.setAuthor("Your Name");
@@ -78,7 +87,7 @@ public class MailingLabels extends HttpServlet {
         ResultSet data = null;
         // Creates a ResultSet for the report
         try {
-            String query = "select ALT_NAME,ALT_ADDRESS1,ALT_ADDRESS2,ALT_CITY||','||ALT_STATE||' '||ALT_ZIP CSZ " +
+            String query = "select ALT_NAME,ALT_ADDRESS1,ALT_ADDRESS2,ALT_CITY||',  '||ALT_STATE||' '||ALT_ZIP CSZ " +
                     "from HT_ORDERS where PRINT_LABEL = 1";
 
             PreparedStatement ps = connection.prepareStatement(query);
@@ -131,6 +140,8 @@ public class MailingLabels extends HttpServlet {
 
     private void addLabel() {
         // Add a new page if you are beyond the maximum Rows
+
+
         if (currentRow == maximumRows + 1) {
             document.getPages().add(page);
             currentRow = 1;
@@ -144,7 +155,7 @@ public class MailingLabels extends HttpServlet {
             addToFirstColumn();
         } else {
             page = new Page(PageSize.LETTER, PageOrientation.PORTRAIT);
-
+            page.getElements().add(grid);
             page.getDimensions().setTopMargin(topMargin);
             page.getDimensions().setBottomMargin(bottomMargin);
             page.getDimensions().setRightMargin(rightMargin);
@@ -202,9 +213,58 @@ public class MailingLabels extends HttpServlet {
     }
 
     // This is where you format the look of each label
-    private void addLabelInfo(float x, float y) {
+    private void addLabelInfo1(float x, float y) {
         TextArea txt3;
         TextArea txt4;
+        TextArea txt1 = new TextArea(Name, x + labelLeftRightMargin,
+                y + labelTopBottomMargin, labelWidth
+                - (labelLeftRightMargin * 2), 11,
+                Font.getTimesRoman(), 11);
+        TextArea txt2 = new TextArea(Address1, x + labelLeftRightMargin,
+                y + labelTopBottomMargin + 12, labelWidth
+                - (labelLeftRightMargin * 2), 11,
+                Font.getTimesRoman(), 11);
+        if (Address2.length() > 0) {
+            txt3 = new TextArea(Address2, x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 24, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+
+            txt4 = new TextArea(CSZ, x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 36, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+        } else {
+            txt3 = new TextArea(CSZ, x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 24, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+
+            txt4 = new TextArea("", x + labelLeftRightMargin,
+                    y + labelTopBottomMargin + 36, labelWidth
+                    - (labelLeftRightMargin * 2), 11,
+                    Font.getTimesRoman(), 11);
+        }
+        page.getElements().add(txt1);
+        page.getElements().add(txt2);
+        page.getElements().add(txt3);
+        page.getElements().add(txt4);
+    }
+
+     private void addLabelInfo(float x, float y) {
+        TextArea txt3;
+        TextArea txt4;
+         switch ((int) y) {
+          case 504:
+              y = 510;
+              break;
+          case 576:
+              y = 588;
+              break;
+          case 648:
+                 y = 660;
+              break;
+          }
         TextArea txt1 = new TextArea(Name, x + labelLeftRightMargin,
                 y + labelTopBottomMargin, labelWidth
                 - (labelLeftRightMargin * 2), 11,
