@@ -627,13 +627,13 @@ public class Invoice {
 
                 ResultSet rs = ps.executeQuery();
                 v1 = new Vector<ProductDAO>(1, 1);
-                String s = " Belt & Holster, Cyl Pouch & Ammo Pouch";
+                String s = "";
 
                 while (rs.next()) {
                     if (rs.getInt(2) == 58713) {
-                        s = "Embossed" + s;
+                        s = "Embossed  Belt & Holster, Cyl Pouch & Ammo Pouch";
                     } else if (rs.getInt(2) == 59308) {
-                        s = "Mexican DL" + s;
+                        s = "Mexican DL  Belt & Holster, Cyl Pouch & Ammo Pouch ";
                     } else {
                         s = rs.getString(4);
                     }
