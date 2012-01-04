@@ -95,7 +95,7 @@ public class Invoice {
 
         public MyInvoice() {
             // LayoutGrid grid = new LayoutGrid(); //Default is decimal
-            //   template.getElements().add(grid);
+           //  template.getElements().add(grid);
             // Top part of Invoice
 
             template.getElements().add(new Label("Heritage Manufacturing, Inc.", 0, 10, 540, 18, Font.getHelveticaBold(), 14, TextAlign.CENTER));
@@ -811,7 +811,7 @@ public class Invoice {
             if (clerk.equalsIgnoreCase("maria"))
                 user = "QuickDraw";
 
-            if (clerk.equalsIgnoreCase("chanty"))
+            if (clerk.equalsIgnoreCase("chanty")|| clerk.equalsIgnoreCase("misfire")|| clerk.equalsIgnoreCase("missfire"))
                 user = "Missfire";
             if (clerk.equalsIgnoreCase("web"))
                 user = "web";
