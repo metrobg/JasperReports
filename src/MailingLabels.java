@@ -255,6 +255,12 @@ public class MailingLabels extends HttpServlet {
         TextArea txt3;
         TextArea txt4;
          switch ((int) y) {
+          case 360:
+               y = 366;
+              break;
+          case 432:
+               y = 438;
+              break;
           case 504:
               y = 510;
               break;
